@@ -6,11 +6,11 @@ FileMover is a small script that allows you to transfer files between local and 
 
 ## Arguments
 
-* -s - source file for copying or moving
+* -s - **(required)** source file for copying or moving
 
-* -t - target directory where the file will be placed and rotated
+* -t - **(required)** target directory where the file will be placed and rotated
 
-* -f - file name in the target directory (during rotation, a postfix like `.N` will be added)
+* -f - **(required)** file name in the target directory (during rotation, a postfix like `.N` will be added)
 
 * -l - number of last copies of the file (default: 7)
 

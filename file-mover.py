@@ -53,13 +53,11 @@ def rotate_files(dir_path, limit: int, file_prefix: str = '', file_postfix: str 
 
     if not os.path.exists(dir_path) or not os.path.isdir(dir_path):
         return 'Target path not exist!'
-
     last_file = limit
     for i in range(limit - 1, 0, -1):
         if os.path.exists(dir_path + file_prefix + str(i) + file_postfix):
             last_file = i
             break
-
     if last_file == limit - 1:
         try:
             os.remove(dir_path + file_prefix + str(last_file) + file_postfix)
@@ -81,13 +79,11 @@ def rotate_files(dir_path, limit: int, file_prefix: str = '', file_postfix: str 
             shutil.move(dir_path + new_file, dir_path + file_prefix + '1' + file_postfix)
         except PermissionError:
             return f'Error! File permission denied! ({sys.exc_info()[1].filename})'
-
     return 0
 
 
 def get_file_hash(file_path: str):
     buffer_size = 65536  # 64Kb
-
     md5 = hashlib.md5()
     try:
         with open(file_path, 'rb') as file:
@@ -114,37 +110,25 @@ def delete_file(file_path: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Copy/move and rotating files v0.3  //  '
+    parser = argparse.ArgumentParser(description='Copy/move and rotating files v1.0  //  '
                                                  'https://github.com/ghosteedd/FileMover')
-    parser.add_argument('-s', '--source', type=str, default=None, help='source file')
-    parser.add_argument('-t', '--target', type=str, default=None, help='target path')
-    parser.add_argument('-f', '--file-name', type=str, default=None, help='file name in target path')
+    parser.add_argument('-s', '--source', type=str, required=True, help='source file')
+    parser.add_argument('-t', '--target', type=str, required=True, help='target path')
+    parser.add_argument('-f', '--file-name', type=str, required=True, help='file name in target path')
     parser.add_argument('-l', '--limit', type=int, default=7, help='files limit in target path')
-    parser.add_argument('-c', '--copy', action='store_const', const=True, default=False,
-                        help='don\'t delete source file')
-    parser.add_argument('-comp', '--comparison', action='store_const', const=True, default=False,
+    parser.add_argument('-c', '--copy', action='store_true', help='don\'t delete source file')
+    parser.add_argument('-comp', '--comparison', action='store_true',
                         help='enable comparison source file and newest file in target path. '
-                             'If files is equal don\'t rotate files')
+                             'If files is equal don\'t rotate files'
+                        )
     args = parser.parse_args()
-
-    if args.source is None:
-        print('Error! Source file param not found. Use -h for help!')
-        sys.exit(-1)
-    if args.target is None:
-        print('Error! Target path param not found. Use -h for help!')
-        sys.exit(-2)
-    if args.file_name is None:
-        print('Error! Target file name param not found. Use -h for help!')
-        sys.exit(-3)
-
     print('Checking source file...')
     check_result = check_access_to_file(args.source)
     if check_result != 0:
         print(check_result)
-        sys.exit(-4)
+        sys.exit(1)
     else:
         print('Done!')
-
     if args.copy:
         print('Coping new file to temporary path...')
     else:
@@ -152,10 +136,9 @@ def main():
     file_move_result = move_or_copy_file(args.source, args.target + '/tmp', not args.copy)
     if file_move_result != 0:
         print(file_move_result)
-        sys.exit(-5)
+        sys.exit(2)
     else:
         print('Done!')
-
     if args.comparison:
         print('File comparison...')
         hash_src_result = get_file_hash(args.target + '/tmp')
@@ -169,22 +152,20 @@ def main():
                     sys.exit(0)
                 else:
                     print(delete_file_result)
-                    sys.exit(-6)
+                    sys.exit(3)
         print('Done!')
-
     print('Rotate files...')
     rotate_files_result = rotate_files(args.target + '/', args.limit, args.file_name + '.', '', args.file_name)
     if rotate_files_result != 0:
         print(rotate_files_result)
-        sys.exit(-7)
+        sys.exit(7)
     else:
         print('Done!')
-
     print('Moving new file from temporary path...')
     file_move_result = move_or_copy_file(args.target + '/tmp', args.target + '/' + args.file_name, True)
     if file_move_result != 0:
         print(file_move_result)
-        sys.exit(-8)
+        sys.exit(4)
     else:
         print('Done!')
 
